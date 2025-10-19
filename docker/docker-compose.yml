@@ -27,15 +27,31 @@ services:
     command: server --console-address ":9001" /data
     volumes:
       - challenge_minio_data:/data
-  # Include all the necessary settings to include a document management service in the stack
-  # Remember to configure this service to limit the memory to 50MB
-  # document-management-service:
-  #    environment:
-  #      - JAVA_OPTS=-Xmx50m -Xms50m
-  #    deploy:
-  #      resources:
-  #        limits:
-  #          memory: 50M
+  document-management-service:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    container_name: document_management_service
+    depends_on:
+      - postgresql
+      - minio
+    environment:
+      - JAVA_OPTS=-Xmx50m -Xms50m
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/challenge
+      - SPRING_DATASOURCE_USERNAME={CHANGE_ME}
+      - SPRING_DATASOURCE_PASSWORD={CHANGE_ME}
+      - MINIO_URL=http://minio:9000
+      - MINIO_ACCESS_KEY={CHANGE_ME}
+      - MINIO_SECRET_KEY={CHANGE_ME}
+      - MINIO_BUCKET=document-bucket
+    ports:
+      - "8080:8080"
+    networks:
+      - batch_network
+    deploy:
+      resources:
+        limits:
+          memory: 50M
 
 volumes:
   challenge_postgresql_data:
