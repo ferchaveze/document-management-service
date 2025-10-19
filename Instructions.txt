@@ -1,0 +1,58 @@
+Instructions to set up, run the application, and configure the database for the Document Management Service Challenge:
+
+1. Prerequisites
+Docker & Docker Compose installed on your machine.
+Java 17+ 
+Maven
+
+2. Configuration
+All sensitive configuration is externalized using environment variables and the application.properties file.
+MinIO & PostgreSQL Credentials
+Edit the following files and replace {CHANGE_ME} with your actual credentials:
+src/main/resources/application.properties
+docker/docker-compose.yml
+application.properties:
+minio.url=http://localhost:9000
+minio.access-key=YOUR_MINIO_ACCESS_KEY
+minio.secret-key=YOUR_MINIO_SECRET_KEY
+minio.bucket=document-bucket
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/challenge
+spring.datasource.username=YOUR_DB_USER
+spring.datasource.password=YOUR_DB_PASSWORD
+spring.jpa.hibernate.ddl-auto=none
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+docker-compose.yml: Update the environment variables for postgresql, minio, and document-management-service services.
+
+
+3. Database Schema
+The schema is automatically initialized using the script at docker/init-scripts/schema-init.sql when the PostgreSQL container starts.
+
+4. Build and Run the Application
+Using Docker Compose
+Build and start the stack:
+cd docker
+docker-compose up --build
+Access Services:
+API: http://localhost:8080
+MinIO Console: http://localhost:9001
+PostgreSQL: localhost:5432
+Local Development (Optional)
+Start PostgreSQL and MinIO using Docker Compose:
+cd docker
+docker-compose up postgresql minio
+Run the Spring Boot application locally:
+./mvnw spring-boot:run
+
+5. API Endpoints
+Upload: POST /document-management/upload (multipart/form-data)
+Search: POST /document-management/search (JSON body, with pagination)
+Download: GET /document-management/download/{documentId}
+Refer to docs/document-management-open-api.yml for full API details.
+
+6. Testing
+Run all unit and integration tests:
+./mvnw test
+Generate code coverage report:
+./mvnw jacoco:report
